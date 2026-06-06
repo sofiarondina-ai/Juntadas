@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+
+# Producción / Compilación
+dist/
+build/
+
+# Archivos de sistema / temporales
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

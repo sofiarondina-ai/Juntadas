@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Juntadas 💜 | Agenda de Amigas</title>
+  
+  <!-- SEO & Social Sharing Meta Tags -->
+  <meta name="description" content="Organiza juntadas con tus amigas de forma fácil: confirma asistencia, vota fechas, coordina quién lleva qué y divide los gastos sin vueltas.">
+  <meta property="og:title" content="Juntadas 💜 | Agenda de Amigas">
+  <meta property="og:description" content="Organiza juntadas con tus amigas de forma fácil: confirma asistencia, vota fechas, coordina quién lleva qué y divide los gastos sin vueltas.">
+  <meta property="og:image" content="https://sofiarondina-ai.github.io/Juntadas-amigas/preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sofiarondina-ai.github.io/Juntadas-amigas/">
+  
+  <!-- Google Fonts - Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- App Styles -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Web App Capabilities (iOS) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=180&h=180&fit=crop&q=80">
+</head>
+<body>
+
+  <!-- Header Superior -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <span class="logo-dot"></span>
+        <h1 class="logo-text">Juntadas<span class="purple-accent">.</span></h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button onclick="app.shareGroupState()" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-light); color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Compartir grupo">
+          <i data-lucide="share-2" style="width: 16px; height: 16px;"></i>
+        </button>
+        <div class="user-selector" id="active-user-badge" onclick="app.openUserSelectorModal()">
+          <div class="user-avatar-mini" id="header-user-avatar">?</div>
+          <div class="user-info-mini">
+            <span class="user-label">Amiga Activa</span>
+            <span class="user-name" id="header-user-name">Cargando...</span>
+          </div>
+          <i data-lucide="chevron-down" class="chevron-icon"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal (Vistas) -->
+  <main class="app-main-content">
+    
+    <!-- PANTALLA 1: DASHBOARD (INICIO) -->
+    <section id="screen-dashboard" class="app-screen active">
+      <div class="welcome-section">
+        <h2 class="welcome-title">¡Hola, <span id="welcome-friend-name">amiga</span>! 👋</h2>
+        <p class="welcome-subtitle">¿Qué vamos a organizar hoy?</p>
+      </div>
+
+      <!-- Tarjeta Juntada Destacada (Próxima) -->
+      <div class="section-container">
+        <div class="section-header-row">
+          <h3 class="section-title">Próxima Juntada</h3>
+          <button class="btn-text-only" onclick="app.openNewJuntadaModal()">Nueva <i data-lucide="plus" class="inline-icon"></i></button>
+        </div>
+        <div id="next-juntada-card-container">
+          <!-- Renderizado dinámico de la juntada principal -->
+        </div>
+      </div>
+
+      <!-- Otras Juntadas / Historial -->
+      <div class="section-container">
+        <div class="section-header-row">
+          <h3 class="section-title">Historial de Juntadas</h3>
+          <button class="btn-text-only" onclick="app.openNewJuntadaModal()">Nueva <i data-lucide="plus" class="inline-icon"></i></button>
+        </div>
+        <div id="juntadas-list" class="juntadas-grid">
+          <!-- Lista de juntadas del historial -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 2: DETALLES DE JUNTADA ACTIVA -->
+    <section id="screen-juntada-detail" class="app-screen">
+      <!-- Cabecera de Juntada -->
+      <div class="juntada-detail-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="btn-back" onclick="app.navigateTo('dashboard')">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="juntada-title-area">
+            <span class="juntada-type-badge" id="detail-juntada-type">Cena</span>
+            <h2 id="detail-juntada-title" class="juntada-title-text">Cargando...</h2>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-text-only" onclick="app.openNewJuntadaModal()" title="Nueva Juntada" style="color: var(--color-blue); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 50%; border: 1px solid var(--border-light); padding: 0;">
+            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+          </button>
+          <button class="btn-text-only" onclick="app.deleteActiveJuntada()" title="Eliminar Juntada" style="color: var(--color-cant); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border-radius: 50%; border: 1px solid var(--border-light); padding: 0;">
+            <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Info Rápida de la Juntada -->
+      <div class="juntada-quick-info card-glass">
+        <div class="info-item">
+          <i data-lucide="calendar" class="info-icon text-purple"></i>
+          <div class="info-content">
+            <span class="info-label">Cuándo</span>
+            <span class="info-value" id="detail-juntada-date">Cargando...</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <i data-lucide="map-pin" class="info-icon text-blue"></i>
+          <div class="info-content">
+            <span class="info-label">Dónde</span>
+            <span class="info-value" id="detail-juntada-location">Cargando...</span>
+          </div>
+        </div>
+        <div class="info-item full-width" id="detail-juntada-desc-wrapper">
+          <p id="detail-juntada-description" class="juntada-desc-text"></p>
+        </div>
+      </div>
+
+      <!-- Pestañas de Navegación Interna de la Juntada -->
+      <div class="juntada-tabs">
+        <button class="tab-btn active" onclick="app.switchJuntadaTab('rsvp')" id="tab-btn-rsvp">
+          <i data-lucide="users"></i> Asistencia
+        </button>
+        <button class="tab-btn" onclick="app.switchJuntadaTab('fecha')" id="tab-btn-fecha" style="display: none;">
+          <i data-lucide="vote"></i> Votación
+        </button>
+        <button class="tab-btn" onclick="app.switchJuntadaTab('checklist')" id="tab-btn-checklist">
+          <i data-lucide="shopping-bag"></i> Cosas
+        </button>
+        <button class="tab-btn" onclick="app.switchJuntadaTab('cuentas')" id="tab-btn-cuentas">
+          <i data-lucide="dollar-sign"></i> Gastos
+        </button>
+      </div>
+
+      <!-- Contenidos de las Pestañas -->
+      <div class="juntada-tab-content">
+        
+        <!-- Pestaña 2A: RSVP / Asistencia -->
+        <div id="juntada-tab-rsvp" class="tab-panel active">
+          <!-- Mi Estado Actual -->
+          <div class="my-rsvp-status card-glass accent-border-purple">
+            <h4 class="card-subtitle">Tu asistencia en esta juntada:</h4>
+            <div class="rsvp-options-grid">
+              <button class="rsvp-opt-btn" data-status="going" onclick="app.setMyRSVP('going')">
+                <span class="rsvp-emoji">✅</span> Voy
+              </button>
+              <button class="rsvp-opt-btn" data-status="maybe" onclick="app.setMyRSVP('maybe')">
+                <span class="rsvp-emoji">💬</span> En duda
+              </button>
+              <button class="rsvp-opt-btn" data-status="cant" onclick="app.setMyRSVP('cant')">
+                <span class="rsvp-emoji">❌</span> No puedo
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de Asistentes -->
+          <div class="section-container mt-4">
+            <h4 class="section-title">¿Quiénes confirmaron?</h4>
+            <div id="rsvp-list" class="rsvp-list-container">
+              <!-- Render dinámico de asistencia -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 2B: Votación de Fechas (Sólo visible si fecha es encuesta) -->
+        <div id="juntada-tab-fecha" class="tab-panel">
+          <div class="card-glass accent-border-blue">
+            <h4 class="card-subtitle">Votá las fechas que te queden bien:</h4>
+            <p class="card-desc-text">La fecha definitiva se decidirá según los votos de todas.</p>
+            <div id="date-votes-container" class="votes-options-list">
+              <!-- Opciones de votación dinámicas -->
+            </div>
+            <div class="poll-summary-box mt-3" id="poll-best-option">
+              <!-- Resumen de la opción ganadora -->
+            </div>
+            <!-- Botón para fijar fecha (solo si es creadora/demo) -->
+            <button class="btn-primary btn-full mt-3 btn-blue" id="btn-lock-date" onclick="app.lockJuntadaDate()">
+              <i data-lucide="lock"></i> Confirmar Fecha Ganadora
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestaña 2C: Checklist Colaborativo (Traer Cosas) -->
+        <div id="juntada-tab-checklist" class="tab-panel">
+          <div class="section-header-row">
+            <h4 class="section-title">¿Qué llevamos?</h4>
+            <button class="btn-secondary btn-sm" onclick="app.openNewChecklistItemModal()">
+              <i data-lucide="plus"></i> Agregar ítem
+            </button>
+          </div>
+          <p class="section-desc-text">Hacé click en un ítem para asignártelo o quitártelo.</p>
+          <div id="checklist-container" class="checklist-items-grid">
+            <!-- Items del checklist -->
+          </div>
+        </div>
+
+        <!-- Pestaña 2D: División de Gastos (Cuentas) -->
+        <div id="juntada-tab-cuentas" class="tab-panel">
+          
+          <!-- Balance General Rápido -->
+          <div class="expenses-summary-card card-glass gradient-bg">
+            <div class="summary-stat-row">
+              <div class="stat-item">
+                <span class="stat-label">Gasto Total</span>
+                <span class="stat-value" id="exp-total">$0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Por Persona</span>
+                <span class="stat-value" id="exp-per-person">$0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quién le debe a quién (Cálculos de Balance) -->
+          <div class="section-container mt-4">
+            <h4 class="section-title">¿Cómo saldamos las cuentas? 💸</h4>
+            <div class="debts-card card-glass accent-border-violet">
+              <div id="debts-resolution-list" class="debts-list">
+                <!-- Lista de deudas calculadas -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Historial de Gastos individual -->
+          <div class="section-container mt-4">
+            <div class="section-header-row">
+              <h4 class="section-title">Detalle de Gastos</h4>
+              <button class="btn-secondary btn-sm" onclick="app.openNewExpenseModal()">
+                <i data-lucide="plus"></i> Registrar Gasto
+              </button>
+            </div>
+            <div id="expenses-list" class="expenses-history-list">
+              <!-- Lista de gastos individuales cargados -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: GESTIÓN DE AMIGAS -->
+    <section id="screen-friends" class="app-screen">
+      <div class="welcome-section">
+        <h2 class="welcome-title">Amigas del Grupo 👭</h2>
+        <p class="welcome-subtitle">Administrá quiénes participan del grupo y elegí con quién operar en el simulador.</p>
+      </div>
+
+      <div class="card-glass mt-3">
+        <h4 class="card-subtitle">Agregar Nueva Amiga</h4>
+        <form id="add-friend-form" class="inline-form" onsubmit="app.handleAddFriendForm(event)">
+          <input type="text" id="new-friend-name" placeholder="Nombre (ej. Valen)" required maxlength="20" class="input-text">
+          <button type="submit" class="btn-primary btn-violet">
+            <i data-lucide="user-plus"></i>
+          </button>
+        </form>
+      </div>
+
+      <div class="section-container mt-4">
+        <h4 class="section-title">Lista de Amigas</h4>
+        <p class="section-desc-text">Hacé click en la estrella ⭐ para convertirla en la "Amiga Activa" y probar las acciones desde su perspectiva.</p>
+        <div id="friends-list-container" class="friends-settings-list">
+          <!-- Lista de amigas con opción de eliminar/activar -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: CALENDARIO GRUPAL -->
+    <section id="screen-calendar" class="app-screen">
+      <div class="welcome-section">
+        <h2 class="welcome-title">Calendario Grupal 🗓️</h2>
+        <p class="welcome-subtitle">Cargá tus horarios y descubrí los mejores días para juntarse.</p>
+      </div>
+
+      <div class="card-glass accent-border-blue mb-4">
+        <h3 class="card-subtitle">Tu disponibilidad esta semana</h3>
+        <p class="card-desc-text">Tocá los bloques (Mañana, Tarde, Noche) en los días que estés libre. El color cambiará según cuántas coinciden.</p>
+        
+        <div class="calendar-weekly-container" id="calendar-weekly-grid">
+          <!-- Renderizado dinámico de la disponibilidad semanal (Filas de Lunes a Domingo) -->
+        </div>
+      </div>
+
+      <div class="card-glass accent-border-purple">
+        <h3 class="card-subtitle">💡 Días recomendados</h3>
+        <p class="card-desc-text">Momentos con mayor coincidencia para organizar el encuentro:</p>
+        <div id="calendar-suggestions" class="calendar-suggestions-list">
+          <!-- Renderizado dinámico de mejores días -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 5: JUEGOS DE MESA DIGITALES -->
+    <section id="screen-games" class="app-screen">
+      <div class="welcome-section">
+        <h2 class="welcome-title">Juegos de Juntada 🎲</h2>
+        <p class="welcome-subtitle">¡Ideal para divertirse juntas, reírse y revelar secretos!</p>
+      </div>
+
+      <!-- Menú de Selección de Juego -->
+      <div id="games-menu" class="games-menu-container">
+        <!-- Selector Modo Picante -->
+        <div class="card-glass mb-3" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.02); border-radius: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 20px;">🌶️</span>
+            <div>
+              <h4 style="font-size: 13px; font-weight: 700; color: #fff;">Modo Picante (+18)</h4>
+              <p style="font-size: 10px; color: var(--text-secondary);">Preguntas y retos más atrevidos y zarpados</p>
+            </div>
+          </div>
+          <label class="switch" style="position: relative; display: inline-block; width: 46px; height: 26px;">
+            <input type="checkbox" id="game-spicy-toggle" onchange="app.toggleSpicyMode(this.checked)" style="opacity: 0; width: 0; height: 0;">
+            <span id="spicy-slider-visual" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.1); border: 1px solid var(--border-light); transition: .3s; border-radius: 26px;">
+              <span id="spicy-slider-knob" style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%;"></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="card-glass accent-border-purple mb-3" onclick="app.startGame('yo-nunca')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-violet); font-size: 20px; width: 36px; height: 36px;">🍷</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">Yo Nunca Nunca</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">¿Quién tomará un trago? Revelen sus secretos más divertidos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-glass accent-border-blue mb-3" onclick="app.startGame('verdad-reto')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-blue); font-size: 20px; width: 36px; height: 36px;">🔥</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">Verdad o Reto</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">Elegí tu camino. ¿Te animás a responder con la verdad o a cumplir el reto?</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-glass accent-border-purple mb-3" onclick="app.startGame('probablemente')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-violet); font-size: 20px; width: 36px; height: 36px;">🤷‍♀️</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">¿Quién es más probable que...?</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">Debatan y señalen a la indicada del grupo ante cada situación.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-glass accent-border-blue mb-3" onclick="app.startGame('taboo')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-blue); font-size: 20px; width: 36px; height: 36px;">🤫</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">Tabú</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">Hacé adivinar la palabra sin decir ninguna de las prohibidas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-glass accent-border-purple mb-3" onclick="app.startGame('impostor')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-violet); font-size: 20px; width: 36px; height: 36px;">🕵️‍♀️</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">El Impostor</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">¿Quién tiene la palabra infiltrada? Deduzcan y voten a la impostora.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-glass accent-border-blue mb-3" onclick="app.startGame('quien-soy')" style="cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="juntada-icon-badge" style="background: var(--color-blue); font-size: 20px; width: 36px; height: 36px;">🎭</div>
+            <div style="flex: 1;">
+              <h4 style="font-size: 15px; font-weight: 700;">¿Quién soy?</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">Ponte el celular en la frente y adiviná quién sos eligiendo categorías.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenedor del Juego Activo -->
+      <div id="game-active-container" class="card-glass accent-border-purple" style="display: none; padding: 20px; min-height: 250px; flex-direction: column; justify-content: space-between;">
+        <div class="game-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; width: 100%;">
+          <h4 id="game-active-title" style="font-size: 15px; font-weight: 800; color: #fff;">Yo Nunca Nunca</h4>
+          <button class="btn-text-only" onclick="app.exitGame()" style="color: var(--color-cant);"><i data-lucide="x-circle" class="inline-icon"></i> Salir</button>
+        </div>
+
+        <!-- Turno / Jugadora (Solo para Verdad o Reto) -->
+        <div id="game-turn-badge" class="poll-summary-box mb-3" style="display: none; justify-content: center; background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); width: 100%;">
+          <span id="game-turn-text" style="font-weight: 700; color: var(--color-blue); font-size: 13px;">Turno de: Sofi</span>
+        </div>
+
+        <!-- Cuerpo del juego por defecto (La frase/pregunta) -->
+        <div id="game-body-default" class="game-body-area" style="flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; margin: 20px 0; min-height: 100px; width: 100%;">
+          <p id="game-phrase-text" style="font-size: 17px; font-weight: 600; line-height: 1.5; color: #fff;">La frase va acá</p>
+        </div>
+
+        <!-- Cuerpo para Tabú -->
+        <div id="game-body-taboo" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; margin: 15px 0;">
+          <div id="taboo-timer-badge" class="poll-summary-box mb-2" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; font-weight: 700; width: fit-content; margin: 0 auto; font-size: 14px; padding: 6px 12px; border-radius: 20px;">⏱️ 60s</div>
+          <h3 id="taboo-word-title" style="font-size: 22px; font-weight: 800; color: var(--color-blue); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px;">Palabra</h3>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-light); border-radius: 12px; padding: 15px; width: 100%; max-width: 280px; margin: 0 auto;">
+            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 8px; font-weight: 600; letter-spacing: 1px;">Palabras Prohibidas</span>
+            <div id="taboo-forbidden-list" style="display: flex; flex-direction: column; gap: 8px; font-weight: 600; font-size: 15px; color: #fff;">
+              <!-- Elementos tabú -->
+            </div>
+          </div>
+          <div id="taboo-score-badge" style="margin-top: 15px; font-size: 13px; font-weight: 700; color: var(--color-violet);">Puntos este turno: 0</div>
+        </div>
+
+        <!-- Cuerpo para ¿Quién soy? -->
+        <div id="game-body-quiensoy" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; margin: 15px 0;">
+          <!-- Pantalla de Selección de Categoría -->
+          <div id="quiensoy-category-select" style="width: 100%;">
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Elegí la categoría para jugar:</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-width: 250px; margin: 0 auto;">
+              <button class="btn-primary btn-full btn-blue" onclick="app.startQuienSoyRound('famosos')">🎭 Famosos / Personajes</button>
+              <button class="btn-primary btn-full btn-violet" onclick="app.startQuienSoyRound('animales')">🦁 Animales</button>
+              <button class="btn-primary btn-full btn-blue" onclick="app.startQuienSoyRound('objetos')" style="background: var(--color-going);">🔑 Objetos / Cosas</button>
+            </div>
+          </div>
+
+          <!-- Pantalla de Adivinar Activa -->
+          <div id="quiensoy-play-screen" style="display: none; width: 100%;">
+            <div id="quiensoy-timer-badge" class="poll-summary-box mb-2" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #ef4444; font-weight: 700; width: fit-content; margin: 0 auto; font-size: 14px; padding: 6px 12px; border-radius: 20px;">⏱️ 60s</div>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 15px;">Mostrale la pantalla a tus amigas sin mirarla:</p>
+            <div style="background: linear-gradient(135deg, var(--color-violet), var(--color-blue)); border-radius: 16px; padding: 25px 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); width: 100%; max-width: 280px; margin: 0 auto;">
+              <h3 id="quiensoy-card-text" style="font-size: 24px; font-weight: 800; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.4); text-transform: uppercase;">Cargando...</h3>
+            </div>
+            <div id="quiensoy-score-badge" style="margin-top: 15px; font-size: 13px; font-weight: 700; color: var(--color-violet);">Adivinadas: 0</div>
+          </div>
+        </div>
+
+        <!-- Cuerpo para El Impostor -->
+        <div id="game-body-impostor" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; margin: 15px 0;">
+          <!-- Paso 0: Selección de jugadoras -->
+          <div id="impostor-select-step" style="width: 100%;">
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">¿Quiénes van a jugar esta ronda?</p>
+            <div id="impostor-players-selection-list" style="display: flex; flex-direction: column; gap: 8px; max-width: 260px; margin: 0 auto 15px; max-height: 180px; overflow-y: auto; text-align: left; padding: 5px;">
+              <!-- Checkboxes de amigas generados dinámicamente -->
+            </div>
+            <button class="btn-primary btn-full btn-blue" onclick="app.impostorConfirmPlayers()" style="max-width: 220px; margin: 0 auto;">Comenzar Partida ➔</button>
+          </div>
+
+          <!-- Paso 1: Pasa y lee -->
+          <div id="impostor-pass-step" style="display: none; width: 100%;">
+            <div class="user-avatar" id="impostor-current-avatar" style="width: 50px; height: 50px; font-size: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; margin: 0 auto 12px; background: var(--color-violet);">?</div>
+            <h4 id="impostor-current-player-name" style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 5px;">Turno de...</h4>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 20px;">Pasale el celular a ella para que lea su palabra secreta.</p>
+            
+            <button id="btn-impostor-reveal" class="btn-primary btn-full btn-blue" onclick="app.impostorRevealWord()" style="max-width: 220px; margin: 0 auto;">Revelar Palabra 👁️</button>
+            
+            <div id="impostor-secret-word-box" style="display: none; background: rgba(59, 130, 246, 0.08); border: 2px dashed var(--color-blue); border-radius: 12px; padding: 20px; width: 100%; max-width: 250px; margin: 0 auto;">
+              <span style="font-size: 10px; color: var(--color-blue); font-weight: 600; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Tu Palabra Secreta:</span>
+              <span id="impostor-word-text" style="font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 1px;">Palabra</span>
+              <button class="btn-secondary btn-full btn-sm mt-3" onclick="app.impostorHideWord()">Ocultar Palabra 🙈</button>
+            </div>
+          </div>
+
+          <!-- Paso 2: A jugar y debatir -->
+          <div id="impostor-play-step" style="display: none; width: 100%;">
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px;">
+              Cada jugadora debe decir <strong>una sola palabra</strong> para describir lo suyo.<br>
+              ¡Está prohibido mentir pero no seas muy obvia!<br><br>
+              <span style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 8px 12px; display: inline-block; font-weight: 700; color: var(--color-blue);">Empieza describiendo: <span id="impostor-starter-friend">Sofi</span></span>
+            </p>
+            <button class="btn-primary btn-full btn-violet" onclick="app.impostorGoToVoting()" style="max-width: 220px; margin: 0 auto;">Ir a la Votación 🗳️</button>
+          </div>
+
+          <!-- Paso 3: Votación y Eliminación -->
+          <div id="impostor-vote-step" style="display: none; width: 100%;">
+            <h4 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 8px;">Voten para eliminar a alguien:</h4>
+            <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 15px;">Debatan y hagan click en el nombre de la sospechosa para revelar su rol.</p>
+            
+            <div id="impostor-voting-grid" style="display: flex; flex-direction: column; gap: 8px; max-width: 260px; margin: 0 auto; max-height: 180px; overflow-y: auto; padding: 5px;">
+              <!-- Botones de jugadoras vivas -->
+            </div>
+            
+            <div id="impostor-result-message" style="margin-top: 15px; font-size: 13px; font-weight: 600; color: #fff; display: none; padding: 10px; border-radius: 8px; max-width: 280px; margin-left: auto; margin-right: auto;">
+              <!-- Mensaje de resultado de eliminación -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div id="game-controls-normal" class="game-controls" style="margin-top: 10px; width: 100%;">
+          <button class="btn-primary btn-full btn-violet" onclick="app.nextGamePhrase()">Siguiente Frase ➔</button>
+        </div>
+
+        <!-- Botones de Acción para Verdad o Reto -->
+        <div id="game-controls-truth-dare" class="game-controls" style="display: none; gap: 10px; margin-top: 10px; width: 100%;">
+          <button class="btn-primary btn-blue" style="flex: 1;" onclick="app.showTruth()">Verdad 💬</button>
+          <button class="btn-primary btn-violet" style="flex: 1;" onclick="app.showDare()">Reto 🔥</button>
+        </div>
+        
+        <!-- Botón Siguiente Turno (Verdad o Reto) -->
+        <div id="game-controls-next-turn" class="game-controls" style="display: none; margin-top: 10px; width: 100%;">
+          <button class="btn-secondary btn-full" onclick="app.nextTruthDareTurn()">Siguiente Turno ➔</button>
+        </div>
+
+        <!-- Botones de Acción para Tabú -->
+        <div id="game-controls-taboo" class="game-controls" style="display: none; gap: 10px; margin-top: 10px; width: 100%;">
+          <button class="btn-primary btn-violet" style="flex: 1; background: var(--color-going);" onclick="app.tabooNextPhrase(true)">Acertamos! 🚀</button>
+          <button class="btn-secondary" style="flex: 1; border-color: var(--color-cant); color: var(--color-cant);" onclick="app.tabooNextPhrase(false)">Dije Tabú! ❌</button>
+        </div>
+
+        <!-- Botones de Acción para ¿Quién soy? -->
+        <div id="game-controls-quiensoy" class="game-controls" style="display: none; gap: 10px; margin-top: 10px; width: 100%;">
+          <button class="btn-primary btn-violet" style="flex: 1; background: var(--color-going);" onclick="app.quienSoyNextPhrase(true)">Adivinó! 🎉</button>
+          <button class="btn-secondary" style="flex: 1;" onclick="app.quienSoyNextPhrase(false)">Pasar ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 6: RULETA DE COMIDAS -->
+    <section id="screen-roulette" class="app-screen">
+      <div class="welcome-section">
+        <h2 class="welcome-title">Ruleta de Comidas 🍕</h2>
+        <p class="welcome-subtitle">¿No se deciden qué comer? ¡Dejen que el destino elija por ustedes!</p>
+      </div>
+
+      <div class="card-glass accent-border-purple text-center" style="display: flex; flex-direction: column; align-items: center; padding: 25px 20px;">
+        <!-- Canvas de la Ruleta -->
+        <div style="position: relative; width: 280px; height: 280px; margin: 15px auto 25px;">
+          <canvas id="food-roulette-canvas" width="280" height="280" style="width: 280px; height: 280px; transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); border-radius: 50%; box-shadow: 0 0 25px rgba(139, 92, 246, 0.4); border: 4px solid var(--border-light);"></canvas>
+          <!-- Flecha indicadora -->
+          <div style="position: absolute; top: -12px; left: calc(50% - 12px); width: 24px; height: 24px; background: #ef4444; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 10; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));"></div>
+          <!-- Botón girar en el medio -->
+          <button id="btn-spin-wheel" onclick="app.spinFoodWheel()" style="position: absolute; top: calc(50% - 32px); left: calc(50% - 32px); width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--color-blue), var(--color-violet)); border: 4px solid #08080c; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(139,92,246,0.6); z-index: 5; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.1s;">GIRAR<br>🎯</button>
+        </div>
+
+        <!-- Tarjeta del Resultado -->
+        <div id="roulette-result-card" class="poll-summary-box" style="display: none; width: 100%; max-width: 280px; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); padding: 15px; border-radius: 12px; margin-bottom: 15px; flex-direction: column; align-items: center; gap: 8px;">
+          <span style="font-size: 10px; text-transform: uppercase; color: var(--color-going); font-weight: 700; letter-spacing: 0.5px;">¡Comida Elegida! 😋</span>
+          <h3 id="roulette-result-food" style="font-size: 20px; font-weight: 800; color: #fff; margin: 2px 0;">Milanesa con puré</h3>
+          <!-- Botón de acción rápida si hay juntada activa -->
+          <button id="btn-roulette-add-checklist" class="btn-secondary btn-sm btn-blue mt-2" onclick="app.addRouletteFoodToChecklist()" style="border-radius: 20px; display: none;">
+            <i data-lucide="plus" style="width: 12px; height: 12px;"></i> Sugerir en la Juntada Activa
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (ESTILO APP MÓVIL) -->
+  <nav class="app-nav-bar">
+    <button class="nav-item active" onclick="app.navigateTo('dashboard')" id="nav-item-dashboard">
+      <i data-lucide="home" class="nav-icon"></i>
+      <span class="nav-label">Inicio</span>
+    </button>
+    <button class="nav-item" onclick="app.navigateTo('calendar')" id="nav-item-calendar">
+      <i data-lucide="calendar" class="nav-icon"></i>
+      <span class="nav-label">Calendario</span>
+    </button>
+    <button class="nav-item" onclick="app.navigateTo('juntada')" id="nav-item-juntada">
+      <i data-lucide="calendar-days" class="nav-icon"></i>
+      <span class="nav-label">Juntada</span>
+    </button>
+    <button class="nav-item" onclick="app.navigateTo('games')" id="nav-item-games">
+      <i data-lucide="gamepad-2" class="nav-icon"></i>
+      <span class="nav-label">Juegos</span>
+    </button>
+    <button class="nav-item" onclick="app.navigateTo('roulette')" id="nav-item-roulette">
+      <i data-lucide="disc" class="nav-icon"></i>
+      <span class="nav-label">Ruleta</span>
+    </button>
+    <button class="nav-item" onclick="app.navigateTo('friends')" id="nav-item-friends">
+      <i data-lucide="users" class="nav-icon"></i>
+      <span class="nav-label">Amigas</span>
+    </button>
+  </nav>
+
+  <!-- MODAL: CREAR NUEVA JUNTADA -->
+  <div id="modal-new-juntada" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Nueva Juntada 🎈</h3>
+        <button class="btn-close-modal" onclick="app.closeModal('modal-new-juntada')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-new-juntada" onsubmit="app.handleCreateJuntada(event)">
+        <div class="form-group">
+          <label for="juntada-title">Nombre de la Juntada</label>
+          <input type="text" id="juntada-title" required placeholder="Ej: Pizza & Birras en lo de Flor" class="input-text">
+        </div>
+        
+        <div class="form-group">
+          <label for="juntada-type">Tipo de Juntada</label>
+          <select id="juntada-type" class="select-box">
+            <option value="Cena">🍕 Cena / Comida</option>
+            <option value="Merienda">☕ Merienda / Café</option>
+            <option value="Asado">🍖 Asado</option>
+            <option value="Pelis">🍿 Noche de Pelis / Consola</option>
+            <option value="Salida">🍹 Salida / Bar / Boliche</option>
+            <option value="Picnic">🧺 Picnic / Parque</option>
+            <option value="Pijama">🧸 Pijama Party</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="juntada-emoji">Emoji / Icono de la Juntada</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="juntada-emoji" value="🍕" class="input-text" maxlength="2" style="font-size: 20px; text-align: center; width: 60px; padding: 8px;">
+            <div class="emoji-preset-grid" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🍕'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🍕</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='☕'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">☕</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🍖'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🍖</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🍿'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🍿</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🍹'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🍹</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🧺'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🧺</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🧸'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🧸</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🎮'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎮</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🎤'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎤</span>
+              <span class="emoji-preset" onclick="document.getElementById('juntada-emoji').value='🎉'" style="cursor: pointer; font-size: 20px; padding: 4px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎉</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>¿Cómo definimos la fecha?</label>
+          <div class="radio-tab-container">
+            <label class="radio-tab">
+              <input type="radio" name="date-type" value="fixed" checked onchange="app.toggleDateTypeInput('fixed')">
+              <span>Fecha Fija</span>
+            </label>
+            <label class="radio-tab">
+              <input type="radio" name="date-type" value="poll" onchange="app.toggleDateTypeInput('poll')">
+              <span>Hacer Votación</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Input de fecha fija -->
+        <div id="date-fixed-group" class="form-group">
+          <label for="juntada-date">Fecha y Hora</label>
+          <input type="datetime-local" id="juntada-date" class="input-text">
+        </div>
+
+        <!-- Inputs para encuesta de fechas -->
+        <div id="date-poll-group" class="form-group" style="display: none;">
+          <label>Opciones de Fecha a Votar (Mínimo 2)</label>
+          <div id="poll-options-inputs-list">
+            <input type="text" placeholder="Opción 1: Viernes 12/6 a la noche" class="input-text mb-2 poll-option-input">
+            <input type="text" placeholder="Opción 2: Sábado 13/6 al mediodía" class="input-text mb-2 poll-option-input">
+          </div>
+          <button type="button" class="btn-secondary btn-xs mt-1 btn-blue" onclick="app.addPollOptionInput()">
+            <i data-lucide="plus" class="inline-icon"></i> Agregar otra opción
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="juntada-location">Lugar / Dirección</label>
+          <input type="text" id="juntada-location" required placeholder="Ej. Casa de Flor (Palermo) o Plaza Italia" class="input-text">
+        </div>
+
+        <div class="form-group">
+          <label for="juntada-desc">Notas / Detalles</label>
+          <textarea id="juntada-desc" rows="3" placeholder="¿Hay que traer traje de baño? ¿Alguna restricción de comida?" class="input-text"></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full btn-violet mt-3">Crear Juntada 🚀</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR GASTO -->
+  <div id="modal-new-expense" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Registrar Gasto 💵</h3>
+        <button class="btn-close-modal" onclick="app.closeModal('modal-new-expense')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-new-expense" onsubmit="app.handleCreateExpense(event)">
+        <div class="form-group">
+          <label for="exp-payer">¿Quién pagó?</label>
+          <select id="exp-payer" class="select-box">
+            <!-- Opciones dinámicas de amigas -->
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="exp-amount">Monto total ($)</label>
+          <input type="number" id="exp-amount" required min="1" placeholder="Ej. 12500" class="input-text" step="any">
+        </div>
+
+        <div class="form-group">
+          <label for="exp-desc">¿Qué compró?</label>
+          <input type="text" id="exp-desc" required placeholder="Ej. Helado, Bebidas, Carbón" class="input-text" maxlength="30">
+        </div>
+
+        <div class="form-group">
+          <label>¿Quiénes participan del gasto?</label>
+          <p class="form-desc-text">Por defecto se divide entre todas las que asisten ("Confirmo" y "En duda"). Desmarcar si alguien no consume.</p>
+          <div id="exp-participants-checkboxes" class="participants-checkbox-list">
+            <!-- Generado dinámicamente con checkboxes de amigas -->
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full btn-violet mt-3">Guardar Gasto 💾</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR ÍTEM DE CHECKLIST -->
+  <div id="modal-new-checklist" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>¿Qué hace falta traer? 🛍️</h3>
+        <button class="btn-close-modal" onclick="app.closeModal('modal-new-checklist')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-new-checklist" onsubmit="app.handleCreateChecklistItem(event)">
+        <div class="form-group">
+          <label for="checklist-item-name">Nombre del elemento</label>
+          <input type="text" id="checklist-item-name" required placeholder="Ej. Fernet 1L, Vasos descartables" class="input-text" maxlength="30">
+        </div>
+        
+        <div class="form-group">
+          <label for="checklist-item-qty">Cantidad / Detalles (opcional)</label>
+          <input type="text" id="checklist-item-qty" placeholder="Ej. 2 botellas, 1 paquete" class="input-text" maxlength="20">
+        </div>
+
+        <div class="form-group">
+          <label for="checklist-item-assignee">Asignar a alguien (opcional)</label>
+          <select id="checklist-item-assignee" class="select-box">
+            <option value="">Nadie aún (lo elige cualquiera)</option>
+            <!-- Opciones dinámicas de amigas -->
+          </select>
+        </div>
+
+        <button type="submit" class="btn-primary btn-full btn-blue mt-3">Agregar Item ➕</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SELECTOR DE USUARIO ACTIVO (MÓVIL RÁPIDO) -->
+  <div id="modal-user-selector" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>¿Quién sos? 👩‍🦰</h3>
+        <button class="btn-close-modal" onclick="app.closeModal('modal-user-selector')">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <p class="modal-desc-text">Seleccioná tu perfil para poder interactuar en la app, confirmar tu asistencia, votar fechas y anotarte en las compras.</p>
+      <div id="user-selector-options" class="user-picker-grid">
+        <!-- Render dinámico de opciones de amigas -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal -->
+  <script src="app.js"></script>
+</body>
+</html>

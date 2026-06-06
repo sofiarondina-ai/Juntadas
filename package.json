@@ -1,0 +1,14 @@
+{
+  "name": "juntadas-app",
+  "version": "1.0.0",
+  "description": "Aplicación premium para organizar juntadas con tu grupo de amigas.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}
