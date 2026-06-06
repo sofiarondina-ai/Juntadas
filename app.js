@@ -4,6 +4,9 @@
 
 class JuntadasApp {
   constructor() {
+    this.sheetsApiUrl = 'https://script.google.com/macros/s/AKfycbwCmFsZcEbx5Whuc7QTlrw_yBwEQqhnnyyqgIgMkPxlLs8Sb57Q3Hum4iDEQ5PLHqMuag/exec';
+    this.cloudSaveTimeout = null;
+
     this.state = {
       friends: [],
       juntadas: [],
@@ -235,6 +238,9 @@ class JuntadasApp {
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
       dateInput.value = now.toISOString().slice(0, 16);
     }
+
+    // Sincronizar con Google Sheets en segundo plano
+    this.fetchCloudState();
   }
 
   // Cargar del LocalStorage
@@ -251,8 +257,13 @@ class JuntadasApp {
     }
   }
 
-  // Guardar en LocalStorage
+  // Guardar en LocalStorage y disparar subida a la nube
   saveState() {
+    this.saveStateLocally();
+    this.triggerCloudSave();
+  }
+
+  saveStateLocally() {
     try {
       localStorage.setItem('juntadas_app_state', JSON.stringify(this.state));
     } catch (e) {
@@ -2678,6 +2689,140 @@ class JuntadasApp {
     // Redirigir al checklist de la juntada para que lo vean
     this.state.activeJuntadaTab = 'checklist';
     this.navigateTo('juntada');
+  }
+
+  // ------------------------------------------------------------------------
+  // PERSISTENCIA Y SINCRONIZACIÓN EN LA NUBE (GOOGLE SHEETS)
+  // ------------------------------------------------------------------------
+  fetchCloudState() {
+    if (!this.sheetsApiUrl) {
+      this.updateCloudSyncStatus('local');
+      return;
+    }
+
+    this.updateCloudSyncStatus('syncing');
+
+    fetch(this.sheetsApiUrl)
+      .then(res => res.json())
+      .then(cloudState => {
+        if (cloudState && cloudState.friends && cloudState.friends.length > 0) {
+          // Mezclamos datos compartidos
+          this.state.friends = cloudState.friends;
+          this.state.juntadas = cloudState.juntadas || [];
+          this.state.availability = cloudState.availability || {};
+          
+          this.saveStateLocally();
+          
+          // Re-renderizar vistas para aplicar cambios
+          this.renderHeader();
+          this.renderDashboard();
+          this.renderFriendsScreen();
+          this.renderCalendarScreen();
+          
+          const activeScreen = document.querySelector('.app-screen.active');
+          if (activeScreen && activeScreen.id === 'screen-juntada-detail') {
+            this.renderJuntadaDetail();
+          }
+
+          this.updateCloudSyncStatus('synced');
+        } else {
+          console.log("El Google Sheet está vacío. Subiendo estado actual...");
+          this.saveCloudState();
+        }
+      })
+      .catch(err => {
+        console.error("Error al descargar estado de la nube:", err);
+        this.updateCloudSyncStatus('error');
+      });
+  }
+
+  triggerCloudSave() {
+    if (!this.sheetsApiUrl) return;
+
+    this.updateCloudSyncStatus('syncing');
+
+    if (this.cloudSaveTimeout) {
+      clearTimeout(this.cloudSaveTimeout);
+    }
+
+    this.cloudSaveTimeout = setTimeout(() => {
+      this.saveCloudState();
+    }, 1500);
+  }
+
+  saveCloudState() {
+    if (!this.sheetsApiUrl) return;
+
+    const payload = {
+      friends: this.state.friends,
+      juntadas: this.state.juntadas,
+      availability: this.state.availability
+    };
+
+    fetch(this.sheetsApiUrl, {
+      method: 'POST',
+      mode: 'cors',
+      body: JSON.stringify(payload),
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Sincronización en la nube exitosa:", data);
+        this.updateCloudSyncStatus('synced');
+      })
+      .catch(err => {
+        console.error("Error al subir estado a la nube:", err);
+        this.updateCloudSyncStatus('error');
+      });
+  }
+
+  updateCloudSyncStatus(status) {
+    let statusEl = document.getElementById('cloud-sync-status');
+    if (!statusEl) {
+      const logoArea = document.querySelector('.logo-area');
+      if (logoArea) {
+        statusEl = document.createElement('span');
+        statusEl.id = 'cloud-sync-status';
+        statusEl.style.fontSize = '9px';
+        statusEl.style.fontWeight = '800';
+        statusEl.style.padding = '3px 8px';
+        statusEl.style.borderRadius = '20px';
+        statusEl.style.display = 'inline-flex';
+        statusEl.style.alignItems = 'center';
+        statusEl.style.marginLeft = '10px';
+        statusEl.style.verticalAlign = 'middle';
+        statusEl.style.letterSpacing = '0.5px';
+        statusEl.style.textTransform = 'uppercase';
+        statusEl.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        logoArea.appendChild(statusEl);
+      }
+    }
+    
+    if (!statusEl) return;
+
+    if (status === 'syncing') {
+      statusEl.style.background = 'rgba(245, 158, 11, 0.12)';
+      statusEl.style.color = '#f59e0b';
+      statusEl.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+      statusEl.innerHTML = '🔄 Sincronizando';
+    } else if (status === 'synced') {
+      statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
+      statusEl.style.color = '#10b981';
+      statusEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      statusEl.innerHTML = '☁️ Nube al día';
+    } else if (status === 'error') {
+      statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
+      statusEl.style.color = '#ef4444';
+      statusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      statusEl.innerHTML = '⚠️ Error red';
+    } else if (status === 'local') {
+      statusEl.style.background = 'rgba(255, 255, 255, 0.05)';
+      statusEl.style.color = 'var(--text-muted)';
+      statusEl.style.border = '1px solid var(--border-light)';
+      statusEl.innerHTML = '☁️ Local';
+    }
   }
 }
 
